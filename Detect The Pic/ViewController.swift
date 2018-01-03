@@ -69,14 +69,16 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell()
+        if let cell = tableView.dequeueReusableCell(withIdentifier: "myCell", for: indexPath) as? CoreMLTableViewCell {
         
-        let observation = observations[indexPath.row]
-        
-        
-        cell.textLabel?.text = "\(observation.identifier) Confidence: \(observation.confidence * 100.0)%"
-        
-        return cell
+            let observation = observations[indexPath.row]
+            
+            
+            cell.theSmallLabel.text = "\(observation.identifier) Confidence: \(observation.confidence * 100.0)%"
+            
+            return cell
+        }
+        return UITableViewCell()
     }
     
     
