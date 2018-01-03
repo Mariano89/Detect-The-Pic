@@ -10,28 +10,32 @@ import UIKit
 import CoreML
 import Vision
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITableViewDataSource, UITableViewDelegate {
     
     @IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var tableView: UITableView!
     
     let resnetModel = Resnet50()
     var imagePicker = UIImagePickerController()
+    var observations : [VNClassificationObservation] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         imagePicker.delegate = self
-        
+        tableView.delegate = self
+        tableView.dataSource = self
     }
     
     func processPic(image: UIImage) {
         if let model = try? VNCoreMLModel(for: resnetModel.model) {
             let request = VNCoreMLRequest(model: model, completionHandler: { (request, error) in
                 if let results = request.results as? [VNClassificationObservation] {
-                    for result in results {
-                        print("ID: \(result.identifier) Confidence: \(result.confidence)")
-                    }
+                    self.observations = results
+                    self.tableView.reloadData()
+//                    for result in results {
+//                        print("ID: \(result.identifier) Confidence: \(result.confidence)")
+//                    }
                 }
             })
             
@@ -59,6 +63,22 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         imagePicker.sourceType = .camera
         present(imagePicker, animated: true, completion: nil)
     }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return observations.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = UITableViewCell()
+        
+        let observation = observations[indexPath.row]
+        
+        
+        cell.textLabel?.text = "\(observation.identifier) Confidence: \(observation.confidence * 100.0)%"
+        
+        return cell
+    }
+    
     
 }
 
